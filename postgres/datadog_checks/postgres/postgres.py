@@ -13,6 +13,7 @@ from datadog_checks.postgres.metrics_cache import PostgresMetricsCache
 
 from .config import PostgresConfig
 from .statements import PgStatementsMixin
+
 try:
     import datadog_agent
 except ImportError:
@@ -49,6 +50,7 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
         AgentCheck.__init__(self, name, init_config, instances)
         PgStatementsMixin.__init__(self, name, init_config, instances)
         self.db = None
+        self.connections_by_db = {}
         self._version = None
         # Deprecate custom_metrics in favor of custom_queries
         if 'custom_metrics' in self.instance:
@@ -56,7 +58,7 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
                 "DEPRECATION NOTICE: Please use the new custom_queries option "
                 "rather than the now deprecated custom_metrics"
             )
-    
+
         self.config = PostgresConfig(self.instance)
         self.metrics_cache = PostgresMetricsCache(self.config)
         self.statement_cache = {}
@@ -217,7 +219,7 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
                 )
 
             descriptor_values = row[: len(descriptors)]
-            column_values = row[len(descriptors) :]
+            column_values = row[len(descriptors):]
 
             # build a map of descriptors and their values
             desc_map = {name: value for (_, name), value in zip(descriptors, descriptor_values)}
@@ -246,7 +248,7 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
         return num_results
 
     def _collect_stats(
-        self, instance_tags
+            self, instance_tags
     ):
         """Query pg_stat_* for various metrics
         If relations is not an empty list, gather per-relation metrics
@@ -294,35 +296,39 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
         for scope in list(metric_scope) + self.config.custom_metrics:
             self._query_scope(cursor, scope, instance_tags, scope in self.config.custom_metrics, relations_config)
 
+        if self.config.collect_execution_plans:
+            self._collect_execution_plans(instance_tags)
+
         cursor.close()
 
-    def _connect(self):
+    def _lazy_connect_database(self, dbname):
         """Get and memoize connections to instances"""
-        if self.db and self.db.closed:
+        db = self.connections_by_db.get(dbname, None)
+        if db and db.closed:
             # Reset the connection object to retry to connect
-            self.db = None
+            db = None
 
-        if self.db:
-            if self.db.status != psycopg2.extensions.STATUS_READY:
+        if db:
+            if db.status != psycopg2.extensions.STATUS_READY:
                 # Some transaction went wrong and the connection is in an unhealthy state. Let's fix that
-                self.db.rollback()
+                db.rollback()
         else:
             if self.config.host == 'localhost' and self.config.password == '':
                 # Use ident method
                 connection_string = "user=%s dbname=%s, application_name=%s" % (
                     self.config.user,
-                    self.config.dbname,
+                    dbname,
                     "datadog-agent",
                 )
                 if self.config.query_timeout:
                     connection_string += " options='-c statement_timeout=%s'" % self.config.query_timeout
-                self.db = psycopg2.connect(connection_string)
+                db = psycopg2.connect(connection_string)
             else:
                 args = {
                     'host': self.config.host,
                     'user': self.config.user,
                     'password': self.config.password,
-                    'database': self.config.dbname,
+                    'database': dbname,
                     'sslmode': self.config.ssl_mode,
                     'application_name': "datadog-agent",
                 }
@@ -330,7 +336,17 @@ class PostgreSql(PgStatementsMixin, AgentCheck):
                     args['port'] = self.config.port
                 if self.config.query_timeout:
                     args['options'] = '-c statement_timeout=%s' % self.config.query_timeout
-                self.db = psycopg2.connect(**args)
+                db = psycopg2.connect(**args)
+        self.connections_by_db[dbname] = db
+        return db
+
+    def _connect(self):
+        """Get and memoize connections to instances"""
+        if self.db and self.db.closed:
+            # Reset the connection object to retry to connect
+            self.db = None
+
+        self.db = self._lazy_connect_database(self.config.dbname)
 
     def _collect_custom_queries(self, tags):
         """
