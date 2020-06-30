@@ -46,6 +46,8 @@ class PostgresConfig:
         self.collect_default_db = is_affirmative(instance.get('collect_default_database', False))
         self.collect_statement_metrics = is_affirmative(instance.get('collect_statement_metrics', False))
         self.collect_execution_plans = is_affirmative(instance.get('collect_execution_plans', False))
+        self.pg_stat_activity_samples_per_run = instance.get('pg_stat_activity_samples_per_run', 10)
+        self.pg_stat_activity_sleep_per_sample = instance.get('pg_stat_activity_sleep_per_sample', 0)
         self.custom_queries = instance.get('custom_queries', [])
 
         if not self.host:

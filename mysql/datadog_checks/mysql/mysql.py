@@ -19,7 +19,7 @@ from datadog_checks.base import AgentCheck, is_affirmative
 from datadog_checks.base.utils.db import QueryManager
 
 from .execution_plans import ExecutionPlansMixin
-from .sql import compute_sql_signature
+from datadog_checks.base.utils.db.sql import compute_sql_signature
 
 try:
     import psutil

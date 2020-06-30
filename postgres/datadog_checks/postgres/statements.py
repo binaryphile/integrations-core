@@ -1,19 +1,32 @@
 # (C) Datadog, Inc. 2020-present
 # All rights reserved
 # Licensed under Simplified BSD License (see LICENSE)
+import decimal
 import json
 from collections import defaultdict
 
 import mmh3
 import psycopg2
 import psycopg2.extras
+import time
+from datadog_checks.base import AgentCheck
+import socket
+from datadog_checks.base.utils.db.sql import compute_sql_signature, compute_exec_plan_signature
 
-from datadog_checks.base import AgentCheck, ConfigurationError, is_affirmative
+from contextlib import closing
 
 try:
     import datadog_agent
 except ImportError:
     from ..stubs import datadog_agent
+
+
+class EventEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return float(o)
+        return super(EventEncoder, self).default(o)
+
 
 # TODO: As a future optimization, the `query` column should be cached on first request
 # and not requested again until agent restart or pg_stats reset. This is to avoid
@@ -82,7 +95,8 @@ VALID_EXPLAIN_STATEMENTS = frozenset({
     'update',
 })
 
-db_postgres_event_keys = [
+# keys from pg_stat_activity to include along with each (sample & execution plan)
+pg_stat_activity_sample_keys = [
     'query_start',
     'datname',
     'usesysid',
@@ -93,24 +107,6 @@ db_postgres_event_keys = [
     'wait_event',
     'state',
 ]
-
-
-# TODO: move this to a shared lib
-def compute_sql_signature(normalized_query):
-    """
-    Generate a 64-bit hex signature on the obfuscated & normalized query.
-    """
-    return format(mmh3.hash64(normalized_query, signed=False)[0], 'x')
-
-
-def compute_exec_plan_signature(normalized_json_plan):
-    """
-    Given a normalized json query execution plan, generate its 64-bit hex signature
-    """
-    if not normalized_json_plan:
-        return None
-    with_sorted_keys = json.dumps(json.loads(normalized_json_plan), sort_keys=True)
-    return format(mmh3.hash64(with_sorted_keys, signed=False)[0], 'x')
 
 
 class PgStatementsMixin(object):
@@ -124,6 +120,7 @@ class PgStatementsMixin(object):
 
         # Available columns will be queried once and cached as the source of truth.
         self.__pg_stat_statements_columns = None
+        self._activity_last_query_start = None
 
     def _execute_query(self, cursor, query, log_func=None):
         raise NotImplementedError('Check must implement _execute_query()')
@@ -202,68 +199,85 @@ class PgStatementsMixin(object):
 
         self.statement_cache = new_cache
 
-    def _collect_activity_by_datname(self, total_duration_seconds=5):
-        """
-
-        :param total_duration_seconds:
-        :return: {(sql_signature) -> row}
-        """
+    def _sample_pg_stat_activity_by_database(self, repeat_count=10, instance_tags=None):
+        start_time = time.time()
         query = """
         SELECT * FROM pg_stat_activity
         WHERE datname IS NOT NULL
-        AND coalesce(TRIM(query), '') != '';
+        AND coalesce(TRIM(query), '') != ''
         """
 
-        # TODO: redo this several times
-        activity_by_datname = defaultdict(list)
+        activity_by_database = defaultdict(list)
+        for _ in range(self.config.pg_stat_activity_samples_per_run):
+            sample_start_time = time.time()
+            self.db.rollback()
+            with self.db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                if self._activity_last_query_start:
+                    cursor.execute(query + " AND query_start > %s", (self._activity_last_query_start,))
+                else:
+                    cursor.execute(query)
+                rows = cursor.fetchall()
+            # TODO: once stable, either remove these development metrics or make them configurable in a debug mode
+            self.histogram("dd.postgres.sample_pg_stat_activity.sample.time", (time.time() - sample_start_time) * 1000,
+                           tags=instance_tags)
+            self.histogram("dd.postgres.sample_pg_stat_activity.sample.rows", len(rows), tags=instance_tags)
+            for row in rows:
+                if not row['query'] or not row['datname']:
+                    continue
+                activity_by_database[row['datname']].append(row)
+                if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
+                    self._activity_last_query_start = row['query_start']
+            time.sleep(self.config.pg_stat_activity_sleep_per_sample)
 
-        with self.db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-            rows = self._execute_query(cursor, query)
-            if not rows:
-                return activity_by_datname
+        self.gauge("dd.postgres.sample_pg_stat_activity.total.time", (time.time() - start_time) * 1000,
+                   tags=instance_tags)
+        return activity_by_database
 
-        max_query_start = None
-        for row in rows:
-            if not row['query'] or not row['datname']:
-                continue
-            activity_by_datname[row['datname']].append(row)
-            if max_query_start is None or row['query_start'] > max_query_start:
-                max_query_start = row['query_start']
-
-        return activity_by_datname
-
-    def _run_explain(self, db, statement):
+    def _run_explain(self, db, statement, instance_tags=None):
         # TODO: cleaner query cleaning to strip comments, etc.
         if statement.strip().split(' ', 1)[0].lower() not in VALID_EXPLAIN_STATEMENTS:
             return None
-
         with db.cursor() as cursor:
             try:
+                start_time = time.time()
                 query = 'EXPLAIN (FORMAT JSON) {statement}'.format(statement=statement)
                 cursor.execute(query)
                 result = cursor.fetchone()
+                self.histogram("dd.postgres.run_explain.time", (time.time() - start_time) * 1000, tags=instance_tags)
             except Exception as e:
                 self.log.error("failed to collect execution plan for query='%s': %s", statement, e)
                 return None
-
         if not result or len(result) < 1 or len(result[0]) < 1:
             return None
+        return result[0][0]
 
-        # TODO: see if there's a way we can avoid having the client library pre-emptively deserialize the json
-        # plan for us
-        plan = result[0][0]
-        return json.dumps(plan) if isinstance(plan, dict) else plan
+    def _submit_log_events(self, events):
+        # TODO: This is a temporary hack to send logs via the Python integrations and requires customers
+        # to configure a TCP log on port 10518. THIS CODE SHOULD NOT BE MERGED TO MASTER
+        try:
+            with closing(socket.create_connection(('localhost', 10518))) as c:
+                for e in events:
+                    c.sendall((json.dumps(e, cls=EventEncoder, default=str) + '\n').encode())
+        except ConnectionRefusedError:
+            self.warning('Unable to connect to the logs agent; please see the '
+                         'documentation on configuring the logs agent.')
+            return
 
     def _collect_execution_plans(self, instance_tags):
+        start_time = time.time()
+        # avoid reprocessing the exact same statement
         seen_statements = set()
+        # keep only one sample per unique (query, plan)
         seen_statement_plan_sigs = set()
         events = []
-        for datname, samples in self._collect_activity_by_datname().items():
+        samples_by_database = self._sample_pg_stat_activity_by_database(instance_tags=instance_tags)
+        plan_collection_start_time = time.time()
+        for database, samples in samples_by_database.items():
             try:
-                db = self._lazy_connect_database(datname)
+                db = self._lazy_connect_database(database)
             except Exception as e:
                 self.log.warn("skipping execution plan collection for database=%s due to failed connection: %s",
-                              datname, e)
+                              database, e)
                 continue
 
             for row in samples:
@@ -273,9 +287,10 @@ class PgStatementsMixin(object):
                 seen_statements.add(original_statement)
                 obfuscated_statement = datadog_agent.obfuscate_sql(original_statement)
                 query_signature = compute_sql_signature(obfuscated_statement)
-                plan = self._run_explain(db, original_statement)
-                if not plan:
+                plan_dict = self._run_explain(db, original_statement, instance_tags)
+                if not plan_dict:
                     continue
+                plan = json.dumps(plan_dict)
                 normalized_plan = datadog_agent.obfuscate_sql_exec_plan(plan, normalize=True) if plan else None
                 obfuscated_plan = datadog_agent.obfuscate_sql_exec_plan(plan) if plan else None
                 plan_signature = compute_exec_plan_signature(normalized_plan)
@@ -284,18 +299,23 @@ class PgStatementsMixin(object):
                     seen_statement_plan_sigs.add(statement_plan_sig)
                     events.append({
                         'db': {
-                            # 'instance': None,
+                            'instance': row['datname'],
                             'statement': obfuscated_statement,
                             'query_signature': query_signature,
                             'plan': plan,
-                            # 'plan_cost': None,
+                            'plan_cost': (plan_dict.get('Plan', {}).get('Total Cost', 0.) or 0.),
                             'plan_signature': plan_signature,
                             'debug': {
                                 'normalized_plan': normalized_plan,
                                 'obfuscated_plan': obfuscated_plan,
                                 'original_statement': original_statement,
                             },
-                            'postgres': {k: row[k] for k in db_postgres_event_keys if k in row},
+                            'postgres': {k: row[k] for k in pg_stat_activity_sample_keys if k in row},
                         }
                     })
-                    self.log.info("event: %s", events[-1])
+        self.gauge("dd.postgres.collect_execution_plans.plans_only.time",
+                   (time.time() - plan_collection_start_time) * 1000, tags=instance_tags)
+
+        self._submit_log_events(events)
+        self.gauge("dd.postgres.collect_execution_plans.total.time", (time.time() - start_time) * 1000,
+                   tags=instance_tags)

@@ -63,3 +63,4 @@ def normalize_datetime(dt):
         dt = dt.replace(tzinfo=pytz.utc)
 
     return dt
+
