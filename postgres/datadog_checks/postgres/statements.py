@@ -199,49 +199,32 @@ class PgStatementsMixin(object):
 
         self.statement_cache = new_cache
 
-    def _sample_pg_stat_activity_by_database(self, instance_tags=None):
+    def _get_new_pg_stat_activity(self, instance_tags=None):
         start_time = time.time()
         query = """
         SELECT * FROM pg_stat_activity
         WHERE datname IS NOT NULL
         AND coalesce(TRIM(query), '') != ''
         """
-
-        total_rows = 0
         activity_by_database = defaultdict(list)
-        for _ in range(self.config.pg_stat_activity_samples_per_run):
-            if time.time() - start_time > self.config.pg_stat_activity_plan_collect_time_limit:
-                self.log.debug("exceeded pg_stat_activity plan collection time limit of %s s",
-                               self.config.pg_stat_activity_plan_collect_time_limit)
-                break
-            if total_rows > self.config.pg_stat_activity_sampled_row_limit:
-                self.log.debug("exceeded pg_stat_activity total row limit of %s row",
-                               self.config.pg_stat_activity_sampled_row_limit)
-                break
-            sample_start_time = time.time()
-            self.db.rollback()
-            with self.db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                if self._activity_last_query_start:
-                    cursor.execute(query + " AND query_start > %s", (self._activity_last_query_start,))
-                else:
-                    cursor.execute(query)
-                rows = cursor.fetchall()
-            # TODO: once stable, either remove these development metrics or make them configurable in a debug mode
-            self.histogram("dd.postgres.sample_pg_stat_activity.sample.time", (time.time() - sample_start_time) * 1000,
-                           tags=instance_tags)
-            self.histogram("dd.postgres.sample_pg_stat_activity.sample.rows", len(rows), tags=instance_tags)
-            for row in rows:
-                if not row['query'] or not row['datname']:
-                    continue
-                activity_by_database[row['datname']].append(row)
-                if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
-                    self._activity_last_query_start = row['query_start']
-                total_rows += 1
-            time.sleep(self.config.pg_stat_activity_sleep_per_sample)
-
-        self.count("dd.postgres.sample_pg_stat_activity.total.rows", total_rows, tags=instance_tags)
-        self.gauge("dd.postgres.sample_pg_stat_activity.total.time", (time.time() - start_time) * 1000,
-                   tags=instance_tags)
+        self.db.rollback()
+        with self.db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            if self._activity_last_query_start:
+                cursor.execute(query + " AND query_start > %s", (self._activity_last_query_start,))
+            else:
+                cursor.execute(query)
+            rows = cursor.fetchall()
+        # TODO: once stable, either remove these development metrics or make them configurable in a debug mode
+        for row in rows:
+            if not row['query'] or not row['datname']:
+                continue
+            activity_by_database[row['datname']].append(row)
+            if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
+                self._activity_last_query_start = row['query_start']
+        self.histogram("dd.postgres.get_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
+                       tags=instance_tags)
+        self.histogram("dd.postgres.get_new_pg_stat_activity.rows", len(rows), tags=instance_tags)
+        self.count("dd.postgres.get_new_pg_stat_activity.total_rows", len(rows), tags=instance_tags)
         return activity_by_database
 
     def _run_explain(self, db, statement, instance_tags=None):
@@ -274,15 +257,10 @@ class PgStatementsMixin(object):
                          'documentation on configuring the logs agent.')
             return
 
-    def _collect_execution_plans(self, instance_tags):
+    def _explain_new_pg_stat_activity(self, samples_by_database, seen_statements, seen_statement_plan_sigs,
+                                      instance_tags):
         start_time = time.time()
-        # avoid reprocessing the exact same statement
-        seen_statements = set()
-        # keep only one sample per unique (query, plan)
-        seen_statement_plan_sigs = set()
         events = []
-        samples_by_database = self._sample_pg_stat_activity_by_database(instance_tags=instance_tags)
-        plan_collection_start_time = time.time()
         for database, samples in samples_by_database.items():
             try:
                 db = self._lazy_connect_database(database)
@@ -290,44 +268,59 @@ class PgStatementsMixin(object):
                 self.log.warn("skipping execution plan collection for database=%s due to failed connection: %s",
                               database, e)
                 continue
-
             for row in samples:
                 original_statement = row['query']
                 if original_statement in seen_statements:
                     continue
                 seen_statements.add(original_statement)
-                obfuscated_statement = datadog_agent.obfuscate_sql(original_statement)
-                query_signature = compute_sql_signature(obfuscated_statement)
-                plan_dict = self._run_explain(db, original_statement, instance_tags)
-                if not plan_dict:
-                    continue
-                plan = json.dumps(plan_dict)
-                normalized_plan = datadog_agent.obfuscate_sql_exec_plan(plan, normalize=True) if plan else None
-                obfuscated_plan = datadog_agent.obfuscate_sql_exec_plan(plan) if plan else None
-                plan_signature = compute_exec_plan_signature(normalized_plan)
-                statement_plan_sig = (query_signature, plan_signature)
-                if statement_plan_sig not in seen_statement_plan_sigs:
-                    seen_statement_plan_sigs.add(statement_plan_sig)
-                    events.append({
-                        'db': {
-                            'instance': row['datname'],
-                            'statement': obfuscated_statement,
-                            'query_signature': query_signature,
-                            'plan': plan,
-                            'plan_cost': (plan_dict.get('Plan', {}).get('Total Cost', 0.) or 0.),
-                            'plan_signature': plan_signature,
-                            'debug': {
-                                'normalized_plan': normalized_plan,
-                                'obfuscated_plan': obfuscated_plan,
-                                'original_statement': original_statement,
-                            },
-                            'postgres': {k: row[k] for k in pg_stat_activity_sample_keys if k in row},
-                        }
-                    })
-        self.gauge("dd.postgres.collect_execution_plans.plans_only.time",
-                   (time.time() - plan_collection_start_time) * 1000, tags=instance_tags)
+                try:
+                    obfuscated_statement = datadog_agent.obfuscate_sql(original_statement)
+                    query_signature = compute_sql_signature(obfuscated_statement)
+                    plan_dict = self._run_explain(db, original_statement, instance_tags)
+                    if not plan_dict:
+                        continue
+                    plan = json.dumps(plan_dict)
+                    normalized_plan = datadog_agent.obfuscate_sql_exec_plan(plan, normalize=True)
+                    plan_signature = compute_exec_plan_signature(normalized_plan)
+                    statement_plan_sig = (query_signature, plan_signature)
+                    if statement_plan_sig not in seen_statement_plan_sigs:
+                        seen_statement_plan_sigs.add(statement_plan_sig)
+                        events.append({
+                            'db': {
+                                'instance': row['datname'],
+                                'statement': obfuscated_statement,
+                                'query_signature': query_signature,
+                                'plan': plan,
+                                'plan_cost': (plan_dict.get('Plan', {}).get('Total Cost', 0.) or 0.),
+                                'plan_signature': plan_signature,
+                                'debug': {
+                                    'normalized_plan': normalized_plan,
+                                    'obfuscated_plan': datadog_agent.obfuscate_sql_exec_plan(plan),
+                                    'original_statement': original_statement,
+                                },
+                                'postgres': {k: row[k] for k in pg_stat_activity_sample_keys if k in row},
+                            }
+                        })
+                except Exception as e:
+                    self.log.error("failed to explain & process query '%s': %s", original_statement, e)
+        self.histogram("dd.postgres.explain_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
+                       tags=instance_tags)
+        return events
 
-        self._submit_log_events(events)
+    def _collect_execution_plans(self, instance_tags):
+        start_time = time.time()
+        # avoid reprocessing the exact same statement
+        seen_statements = set()
+        # keep only one sample per unique (query, plan)
+        seen_statement_plan_sigs = set()
+        while time.time() - start_time < self.config.collect_exec_plan_time_limit:
+            if len(seen_statement_plan_sigs) > self.config.collect_exec_plan_event_limit:
+                break
+            samples_by_database = self._get_new_pg_stat_activity(instance_tags=instance_tags)
+            events = self._explain_new_pg_stat_activity(samples_by_database, seen_statements, seen_statement_plan_sigs,
+                                                        instance_tags)
+            self._submit_log_events(events)
+            time.sleep(self.config.collect_exec_plan_sample_sleep)
         self.gauge("dd.postgres.collect_execution_plans.total.time", (time.time() - start_time) * 1000,
                    tags=instance_tags)
         self.gauge("dd.postgres.collect_execution_plans.seen_statements", len(seen_statements), tags=instance_tags)
