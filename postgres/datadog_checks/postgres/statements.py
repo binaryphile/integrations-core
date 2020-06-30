@@ -239,6 +239,7 @@ class PgStatementsMixin(object):
                 total_rows += 1
             time.sleep(self.config.pg_stat_activity_sleep_per_sample)
 
+        self.count("dd.postgres.sample_pg_stat_activity.total.rows", total_rows, tags=instance_tags)
         self.gauge("dd.postgres.sample_pg_stat_activity.total.time", (time.time() - start_time) * 1000,
                    tags=instance_tags)
         return activity_by_database
