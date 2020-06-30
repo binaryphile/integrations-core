@@ -329,3 +329,6 @@ class PgStatementsMixin(object):
         self._submit_log_events(events)
         self.gauge("dd.postgres.collect_execution_plans.total.time", (time.time() - start_time) * 1000,
                    tags=instance_tags)
+        self.gauge("dd.postgres.collect_execution_plans.seen_statements", len(seen_statements), tags=instance_tags)
+        self.gauge("dd.postgres.collect_execution_plans.seen_statement_plan_sigs", len(seen_statement_plan_sigs),
+                   tags=instance_tags)
