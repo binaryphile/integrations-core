@@ -199,7 +199,7 @@ class PgStatementsMixin(object):
 
         self.statement_cache = new_cache
 
-    def _sample_pg_stat_activity_by_database(self, repeat_count=10, instance_tags=None):
+    def _sample_pg_stat_activity_by_database(self, instance_tags=None):
         start_time = time.time()
         query = """
         SELECT * FROM pg_stat_activity
@@ -207,8 +207,17 @@ class PgStatementsMixin(object):
         AND coalesce(TRIM(query), '') != ''
         """
 
+        total_rows = 0
         activity_by_database = defaultdict(list)
         for _ in range(self.config.pg_stat_activity_samples_per_run):
+            if time.time() - start_time > self.config.pg_stat_activity_plan_collect_time_limit:
+                self.log.debug("exceeded pg_stat_activity plan collection time limit of %s s",
+                               self.config.pg_stat_activity_plan_collect_time_limit)
+                break
+            if total_rows > self.config.pg_stat_activity_sampled_row_limit:
+                self.log.debug("exceeded pg_stat_activity total row limit of %s row",
+                               self.config.pg_stat_activity_sampled_row_limit)
+                break
             sample_start_time = time.time()
             self.db.rollback()
             with self.db.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
@@ -227,6 +236,7 @@ class PgStatementsMixin(object):
                 activity_by_database[row['datname']].append(row)
                 if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
                     self._activity_last_query_start = row['query_start']
+                total_rows += 1
             time.sleep(self.config.pg_stat_activity_sleep_per_sample)
 
         self.gauge("dd.postgres.sample_pg_stat_activity.total.time", (time.time() - start_time) * 1000,
