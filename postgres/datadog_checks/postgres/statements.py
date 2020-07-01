@@ -9,6 +9,7 @@ import mmh3
 import psycopg2
 import psycopg2.extras
 import time
+from datadog import statsd
 from datadog_checks.base import AgentCheck
 import socket
 from datadog_checks.base.utils.db.sql import compute_sql_signature, compute_exec_plan_signature
@@ -221,10 +222,10 @@ class PgStatementsMixin(object):
             activity_by_database[row['datname']].append(row)
             if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
                 self._activity_last_query_start = row['query_start']
-        self.histogram("dd.postgres.get_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
-                       tags=instance_tags)
-        self.histogram("dd.postgres.get_new_pg_stat_activity.rows", len(rows), tags=instance_tags)
-        self.count("dd.postgres.get_new_pg_stat_activity.total_rows", len(rows), tags=instance_tags)
+        statsd.histogram("dd.postgres.get_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
+                         tags=instance_tags)
+        statsd.histogram("dd.postgres.get_new_pg_stat_activity.rows", len(rows), tags=instance_tags)
+        statsd.increment("dd.postgres.get_new_pg_stat_activity.total_rows", len(rows), tags=instance_tags)
         return activity_by_database
 
     def _run_explain(self, db, statement, instance_tags=None):
@@ -237,7 +238,7 @@ class PgStatementsMixin(object):
                 query = 'EXPLAIN (FORMAT JSON) {statement}'.format(statement=statement)
                 cursor.execute(query)
                 result = cursor.fetchone()
-                self.histogram("dd.postgres.run_explain.time", (time.time() - start_time) * 1000, tags=instance_tags)
+                statsd.histogram("dd.postgres.run_explain.time", (time.time() - start_time) * 1000, tags=instance_tags)
             except Exception as e:
                 self.log.error("failed to collect execution plan for query='%s': %s", statement, e)
                 return None
@@ -303,8 +304,8 @@ class PgStatementsMixin(object):
                         })
                 except Exception as e:
                     self.log.error("failed to explain & process query '%s': %s", original_statement, e)
-        self.histogram("dd.postgres.explain_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
-                       tags=instance_tags)
+        statsd.histogram("dd.postgres.explain_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
+                         tags=instance_tags)
         return events
 
     def _collect_execution_plans(self, instance_tags):
@@ -321,6 +322,7 @@ class PgStatementsMixin(object):
                                                         instance_tags)
             self._submit_log_events(events)
             time.sleep(self.config.collect_exec_plan_sample_sleep)
+
         self.gauge("dd.postgres.collect_execution_plans.total.time", (time.time() - start_time) * 1000,
                    tags=instance_tags)
         self.gauge("dd.postgres.collect_execution_plans.seen_statements", len(seen_statements), tags=instance_tags)
