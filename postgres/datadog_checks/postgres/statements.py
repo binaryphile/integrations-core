@@ -96,6 +96,16 @@ VALID_EXPLAIN_STATEMENTS = frozenset({
     'update',
 })
 
+
+def can_explain_statement(statement):
+    # TODO: cleaner query cleaning to strip comments, etc.
+    if statement.strip().split(' ', 1)[0].lower() not in VALID_EXPLAIN_STATEMENTS:
+        return False
+    if statement.startswith('SELECT public.explain_this'):
+        return False
+    return True
+
+
 # keys from pg_stat_activity to include along with each (sample & execution plan)
 pg_stat_activity_sample_keys = [
     'query_start',
@@ -219,6 +229,8 @@ class PgStatementsMixin(object):
         for row in rows:
             if not row['query'] or not row['datname']:
                 continue
+            if not can_explain_statement(row['query']):
+                continue
             activity_by_database[row['datname']].append(row)
             if self._activity_last_query_start is None or row['query_start'] > self._activity_last_query_start:
                 self._activity_last_query_start = row['query_start']
@@ -229,14 +241,12 @@ class PgStatementsMixin(object):
         return activity_by_database
 
     def _run_explain(self, db, statement, instance_tags=None):
-        # TODO: cleaner query cleaning to strip comments, etc.
-        if statement.strip().split(' ', 1)[0].lower() not in VALID_EXPLAIN_STATEMENTS:
-            return None
+        if not can_explain_statement(statement):
+            return
         with db.cursor() as cursor:
             try:
                 start_time = time.time()
-                query = 'EXPLAIN (FORMAT JSON) {statement}'.format(statement=statement)
-                cursor.execute(query)
+                cursor.execute("""SELECT public.explain_this($stmt${statement}$stmt$)""".format(statement=statement))
                 result = cursor.fetchone()
                 statsd.histogram("dd.postgres.run_explain.time", (time.time() - start_time) * 1000, tags=instance_tags)
             except Exception as e:
@@ -303,7 +313,7 @@ class PgStatementsMixin(object):
                             }
                         })
                 except Exception as e:
-                    self.log.error("failed to explain & process query '%s': %s", original_statement, e)
+                    self.log.exception("failed to explain & process query '%s'", original_statement)
         statsd.histogram("dd.postgres.explain_new_pg_stat_activity.time", (time.time() - start_time) * 1000,
                          tags=instance_tags)
         return events
