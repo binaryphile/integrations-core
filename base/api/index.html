@@ -3,7 +3,8 @@
 AgentCheck.check(instance)
 </code></pre> </div> <p>Agent 8 signature:</p> <div class="highlight"> <pre><span></span><code>AgentCheck(name, init_config, instance)     # one instance
 AgentCheck.check()                          # no more instance argument for check method
-</code></pre> </div> <div class="admonition note"> <p class="admonition-title">Note</p> <p>when loading a Custom check, the Agent will inspect the module searching for a subclass of <code>AgentCheck</code>. If such a class exists but has been derived in turn, it'll be ignored - <strong>you should never derive from an existing Check</strong>.</p> </div> <div class="doc doc-children"> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.__init__"> <code class="highlight language-python"> __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> </code> <span class="doc doc-properties"> <small class="doc doc-property doc-property-special"><code>special</code></small> </span> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.__init__" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the check</li> <li><strong>init_config</strong> (<em>dict</em>) - the <code>init_config</code> section of the configuration.</li> <li><strong>instance</strong> (<em>List[dict]</em>) - a one-element list containing the instance options from the configuration file (a list is used to keep backward compatibility with older versions of the Agent).</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>140
+</code></pre> </div> <div class="admonition note"> <p class="admonition-title">Note</p> <p>when loading a Custom check, the Agent will inspect the module searching for a subclass of <code>AgentCheck</code>. If such a class exists but has been derived in turn, it'll be ignored - <strong>you should never derive from an existing Check</strong>.</p> </div> <div class="doc doc-children"> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.__init__"> <code class="highlight language-python"> __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> </code> <span class="doc doc-properties"> <small class="doc doc-property doc-property-special"><code>special</code></small> </span> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.__init__" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the check</li> <li><strong>init_config</strong> (<em>dict</em>) - the <code>init_config</code> section of the configuration.</li> <li><strong>instance</strong> (<em>List[dict]</em>) - a one-element list containing the instance options from the configuration file (a list is used to keep backward compatibility with older versions of the Agent).</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>139
+140
 141
 142
 143
@@ -102,8 +103,7 @@ AgentCheck.check()                          # no more instance argument for chec
 236
 237
 238
-239
-240</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+239</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="c1"># type: (*Any, **Any) -&gt; None</span>
     <span class="sd">"""</span>
 <span class="sd">    - **name** (_str_) - the name of the check</span>
@@ -204,21 +204,21 @@ AgentCheck.check()                          # no more instance argument for chec
 
     <span class="c1"># Functions that will be called exactly once (if successful) before the first check run</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">check_initializations</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">send_config_metadata</span><span class="p">])</span>  <span class="c1"># type: Deque[Callable[[], None]]</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.count"> <code class="highlight language-python"> count<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.count" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a raw count metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>462
-463
-464
-465
-466
-467
-468
-469
-470
-471
-472
-473
-474
-475
-476</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.count"> <code class="highlight language-python"> count<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.count" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a raw count metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample a raw count metric.</span>
 
@@ -246,7 +246,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="s2">"tags"</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>            <span class="c1"># (optional) a list of tags to associate with this event</span>
     <span class="s2">"priority"</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>         <span class="c1"># (optional) specifies the priority of the event ("normal" or "low")</span>
 <span class="p">}</span>
-</code></pre> </div> <ul> <li><strong>event</strong> (<em>dict</em>) - the event to be sent</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>854
+</code></pre> </div> <ul> <li><strong>event</strong> (<em>dict</em>) - the event to be sent</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
 855
 856
 857
@@ -279,21 +293,7 @@ AgentCheck.check()                          # no more instance argument for chec
 884
 885
 886
-887
-888
-889
-890
-891
-892
-893
-894
-895
-896
-897
-898
-899
-900
-901</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+887</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
     <span class="c1"># type: (Event) -&gt; None</span>
     <span class="sd">"""Send an event.</span>
 
@@ -341,23 +341,23 @@ AgentCheck.check()                          # no more instance argument for chec
         <span class="n">event</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'source_type_name'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__NAMESPACE__</span><span class="p">)</span>
 
     <span class="n">aggregator</span><span class="o">.</span><span class="n">submit_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_id</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.gauge"> <code class="highlight language-python"> gauge<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.gauge" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a gauge metric.</p> <p><strong>Parameters:</strong></p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>444
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.gauge"> <code class="highlight language-python"> gauge<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.gauge" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a gauge metric.</p> <p><strong>Parameters:</strong></p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
 445
-446
-447
-448
-449
-450
-451
-452
-453
-454
-455
-456
-457
-458
-459
-460</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">gauge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+446</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">gauge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample a gauge metric.</span>
 
@@ -374,21 +374,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="bp">self</span><span class="o">.</span><span class="n">_submit_metric</span><span class="p">(</span>
         <span class="n">aggregator</span><span class="o">.</span><span class="n">GAUGE</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
     <span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.histogram"> <code class="highlight language-python"> histogram<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.histogram" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a histogram metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>510
-511
-512
-513
-514
-515
-516
-517
-518
-519
-520
-521
-522
-523
-524</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.histogram"> <code class="highlight language-python"> histogram<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.histogram" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a histogram metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample a histogram metric.</span>
 
@@ -403,21 +403,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="bp">self</span><span class="o">.</span><span class="n">_submit_metric</span><span class="p">(</span>
         <span class="n">aggregator</span><span class="o">.</span><span class="n">HISTOGRAM</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
     <span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.historate"> <code class="highlight language-python"> historate<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.historate" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a histogram based on rate metrics.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>526
-527
-528
-529
-530
-531
-532
-533
-534
-535
-536
-537
-538
-539
-540</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">historate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.historate"> <code class="highlight language-python"> historate<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.historate" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a histogram based on rate metrics.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">historate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample a histogram based on rate metrics.</span>
 
@@ -436,7 +436,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="nd">@AgentCheck</span><span class="o">.</span><span class="n">metadata_entrypoint</span>
     <span class="k">def</span> <span class="nf">collect_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="o">...</span>
-</code></pre> </div> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>640
+</code></pre> </div> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
 641
 642
 643
@@ -447,21 +461,7 @@ AgentCheck.check()                          # no more instance argument for chec
 648
 649
 650
-651
-652
-653
-654
-655
-656
-657
-658
-659
-660
-661
-662
-663
-664
-665</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="nd">@classmethod</span>
+651</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span> <span class="nf">metadata_entrypoint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
     <span class="c1"># type: (Callable[..., None]) -&gt; Callable[..., None]</span>
     <span class="sd">"""</span>
@@ -487,21 +487,21 @@ AgentCheck.check()                          # no more instance argument for chec
         <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">entrypoint</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.monotonic_count"> <code class="highlight language-python"> monotonic_count<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.monotonic_count" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample an increasing counter metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>478
-479
-480
-481
-482
-483
-484
-485
-486
-487
-488
-489
-490
-491
-492</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">monotonic_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.monotonic_count"> <code class="highlight language-python"> monotonic_count<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.monotonic_count" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample an increasing counter metric.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">monotonic_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample an increasing counter metric.</span>
 
@@ -516,21 +516,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="bp">self</span><span class="o">.</span><span class="n">_submit_metric</span><span class="p">(</span>
         <span class="n">aggregator</span><span class="o">.</span><span class="n">MONOTONIC_COUNT</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
     <span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.rate"> <code class="highlight language-python"> rate<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.rate" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a point, with the rate calculated at the end of the check.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>494
-495
-496
-497
-498
-499
-500
-501
-502
-503
-504
-505
-506
-507
-508</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.rate"> <code class="highlight language-python"> rate<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.rate" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Sample a point, with the rate calculated at the end of the check.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the metric</li> <li><strong>value</strong> (<em>float</em>) - the value for the metric</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this metric</li> <li><strong>hostname</strong> (<em>str</em>) - a hostname to associate with this metric. Defaults to the current host.</li> <li><strong>device_name</strong> (<em>str</em>) - <strong>deprecated</strong> add a tag in the form <code>device:&lt;device_name&gt;</code> to the <code>tags</code> list instead.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, float, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Sample a point, with the rate calculated at the end of the check.</span>
 
@@ -545,7 +545,21 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="bp">self</span><span class="o">.</span><span class="n">_submit_metric</span><span class="p">(</span>
         <span class="n">aggregator</span><span class="o">.</span><span class="n">RATE</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span>
     <span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.service_check"> <code class="highlight language-python"> service_check<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.service_check" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Send the status of a service.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the service check</li> <li><strong>status</strong> (<em>int</em>) - a constant describing the service status.</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this service check</li> <li><strong>message</strong> (<em>str</em>) - additional information or a description of why this status occurred.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>576
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.service_check"> <code class="highlight language-python"> service_check<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.service_check" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Send the status of a service.</p> <ul> <li><strong>name</strong> (<em>str</em>) - the name of the service check</li> <li><strong>status</strong> (<em>int</em>) - a constant describing the service status.</li> <li><strong>tags</strong> (<em>List[str]</em>) - a list of tags to associate with this service check</li> <li><strong>message</strong> (<em>str</em>) - additional information or a description of why this status occurred.</li> <li><strong>raw</strong> (<em>bool</em>) - whether to ignore any defined namespace prefix</li> </ul> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
 577
 578
 579
@@ -553,21 +567,7 @@ AgentCheck.check()                          # no more instance argument for chec
 581
 582
 583
-584
-585
-586
-587
-588
-589
-590
-591
-592
-593
-594
-595
-596
-597
-598</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">service_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+584</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">service_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># type: (str, ServiceCheckStatus, Sequence[str], str, str, bool) -&gt; None</span>
     <span class="sd">"""Send the status of a service.</span>
 
@@ -590,16 +590,16 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="n">aggregator</span><span class="o">.</span><span class="n">submit_service_check</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_namespace</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">raw</span><span class="p">),</span> <span class="n">status</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">message</span>
     <span class="p">)</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.set_metadata"> <code class="highlight language-python"> set_metadata<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.set_metadata" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Updates the cached metadata <code>name</code> with <code>value</code>, which is then sent by the Agent at regular intervals.</p> <p>:param str name: the name of the metadata :param object value: the value for the metadata. if <code>name</code> has no transformer defined then the raw <code>value</code> will be submitted and therefore it must be a <code>str</code> :param options: keyword arguments to pass to any defined transformer</p> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>617
-618
-619
-620
-621
-622
-623
-624
-625
-626</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> <div class="doc doc-object doc-method"> <h4 class="doc doc-heading" id="datadog_checks.base.checks.base.AgentCheck.set_metadata"> <code class="highlight language-python"> set_metadata<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span> </code> <a class="headerlink" href="#datadog_checks.base.checks.base.AgentCheck.set_metadata" title="Permanent link">¶</a></h4> <div class="doc doc-contents"> <p>Updates the cached metadata <code>name</code> with <code>value</code>, which is then sent by the Agent at regular intervals.</p> <p>:param str name: the name of the metadata :param object value: the value for the metadata. if <code>name</code> has no transformer defined then the raw <code>value</code> will be submitted and therefore it must be a <code>str</code> :param options: keyword arguments to pass to any defined transformer</p> <details class="quote"> <summary>Source code in <code>datadog_checks/base/checks/base.py</code></summary> <table class="highlighttable"> <tr> <td class="linenos"> <div class="linenodiv"> <pre><span></span>603
+604
+605
+606
+607
+608
+609
+610
+611
+612</pre> </div> </td> <td class="code"> <div class="highlight"> <pre><span></span><code><span class="k">def</span> <span class="nf">set_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
     <span class="c1"># type: (str, Any, **Any) -&gt; None</span>
     <span class="sd">"""Updates the cached metadata ``name`` with ``value``, which is then sent by the Agent at regular intervals.</span>
 
@@ -979,7 +979,7 @@ AgentCheck.check()                          # no more instance argument for chec
     <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_config</span><span class="p">()</span>
-</code></pre> </div> </td> </tr> </table> </details> </div> </div> </div> </div> </div> <hr/> <div class="md-source-date"> <small> Last update: June 22, 2020 </small> </div> </article> </div> </div> </main> <footer class="md-footer"> <div class="md-footer-nav"> <nav aria-label="Footer" class="md-footer-nav__inner md-grid"> <a class="md-footer-nav__link md-footer-nav__link--prev" href="../metadata/" rel="prev" title="Metadata"> <div class="md-footer-nav__button md-icon"> <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg> </div> <div class="md-footer-nav__title"> <div class="md-ellipsis"> <span class="md-footer-nav__direction"> Previous </span> Metadata </div> </div> </a> <a class="md-footer-nav__link md-footer-nav__link--next" href="../../ddev/about/" rel="next" title="What's in the box?"> <div class="md-footer-nav__title"> <div class="md-ellipsis"> <span class="md-footer-nav__direction"> Next </span> What's in the box? </div> </div> <div class="md-footer-nav__button md-icon"> <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg> </div> </a> </nav> </div> <div class="md-footer-meta md-typeset"> <div class="md-footer-meta__inner md-grid"> <div class="md-footer-copyright"> <div class="md-footer-copyright__highlight"> Copyright © Datadog, Inc. 2020-present </div> Made with <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank"> Material for MkDocs </a> </div> <div class="md-footer-social"> <a class="md-footer-social__link" href="https://www.datadoghq.com/blog/engineering/" rel="noopener" target="_blank" title="www.datadoghq.com"> <svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M172.2 226.8c-14.6-2.9-28.2 8.9-28.2 23.8V301c0 10.2 7.1 18.4 16.7 22 18.2 6.8 31.3 24.4 31.3 45 0 26.5-21.5 48-48 48s-48-21.5-48-48V120c0-13.3-10.7-24-24-24H24c-13.3 0-24 10.7-24 24v248c0 89.5 82.1 160.2 175 140.7 54.4-11.4 98.3-55.4 109.7-109.7 17.4-82.9-37-157.2-112.5-172.2zM209 0c-9.2-.5-17 6.8-17 16v31.6c0 8.5 6.6 15.5 15 15.9 129.4 7 233.4 112 240.9 241.5.5 8.4 7.5 15 15.9 15h32.1c9.2 0 16.5-7.8 16-17C503.4 139.8 372.2 8.6 209 0zm.3 96c-9.3-.7-17.3 6.7-17.3 16.1v32.1c0 8.4 6.5 15.3 14.8 15.9 76.8 6.3 138 68.2 144.9 145.2.8 8.3 7.6 14.7 15.9 14.7h32.2c9.3 0 16.8-8 16.1-17.3-8.4-110.1-96.5-198.2-206.6-206.7z"></path></svg> </a> <a class="md-footer-social__link" href="https://github.com/DataDog" rel="noopener" target="_blank" title="github.com"> <svg viewbox="0 0 480 512" xmlns="http://www.w3.org/2000/svg"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"></path></svg> </a> <a class="md-footer-social__link" href="https://twitter.com/datadoghq" rel="noopener" target="_blank" title="twitter.com"> <svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg> </a> <a class="md-footer-social__link" href="https://www.instagram.com/datadoghq" rel="noopener" target="_blank" title="www.instagram.com"> <svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"></path></svg> </a> </div> </div> </div> </footer> </div> <script src="../../assets/javascripts/vendor.d710d30a.min.js"></script> <script src="../../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script> <script>
+</code></pre> </div> </td> </tr> </table> </details> </div> </div> </div> </div> </div> <hr/> <div class="md-source-date"> <small> Last update: <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 22, 2020</span> </small> </div> </article> </div> </div> </main> <footer class="md-footer"> <div class="md-footer-nav"> <nav aria-label="Footer" class="md-footer-nav__inner md-grid"> <a class="md-footer-nav__link md-footer-nav__link--prev" href="../metadata/" rel="prev" title="Metadata"> <div class="md-footer-nav__button md-icon"> <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg> </div> <div class="md-footer-nav__title"> <div class="md-ellipsis"> <span class="md-footer-nav__direction"> Previous </span> Metadata </div> </div> </a> <a class="md-footer-nav__link md-footer-nav__link--next" href="../../ddev/about/" rel="next" title="What's in the box?"> <div class="md-footer-nav__title"> <div class="md-ellipsis"> <span class="md-footer-nav__direction"> Next </span> What's in the box? </div> </div> <div class="md-footer-nav__button md-icon"> <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg> </div> </a> </nav> </div> <div class="md-footer-meta md-typeset"> <div class="md-footer-meta__inner md-grid"> <div class="md-footer-copyright"> <div class="md-footer-copyright__highlight"> Copyright © Datadog, Inc. 2020-present </div> Made with <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank"> Material for MkDocs </a> </div> <div class="md-footer-social"> <a class="md-footer-social__link" href="https://www.datadoghq.com/blog/engineering/" rel="noopener" target="_blank" title="www.datadoghq.com"> <svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M172.2 226.8c-14.6-2.9-28.2 8.9-28.2 23.8V301c0 10.2 7.1 18.4 16.7 22 18.2 6.8 31.3 24.4 31.3 45 0 26.5-21.5 48-48 48s-48-21.5-48-48V120c0-13.3-10.7-24-24-24H24c-13.3 0-24 10.7-24 24v248c0 89.5 82.1 160.2 175 140.7 54.4-11.4 98.3-55.4 109.7-109.7 17.4-82.9-37-157.2-112.5-172.2zM209 0c-9.2-.5-17 6.8-17 16v31.6c0 8.5 6.6 15.5 15 15.9 129.4 7 233.4 112 240.9 241.5.5 8.4 7.5 15 15.9 15h32.1c9.2 0 16.5-7.8 16-17C503.4 139.8 372.2 8.6 209 0zm.3 96c-9.3-.7-17.3 6.7-17.3 16.1v32.1c0 8.4 6.5 15.3 14.8 15.9 76.8 6.3 138 68.2 144.9 145.2.8 8.3 7.6 14.7 15.9 14.7h32.2c9.3 0 16.8-8 16.1-17.3-8.4-110.1-96.5-198.2-206.6-206.7z"></path></svg> </a> <a class="md-footer-social__link" href="https://github.com/DataDog" rel="noopener" target="_blank" title="github.com"> <svg viewbox="0 0 480 512" xmlns="http://www.w3.org/2000/svg"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"></path></svg> </a> <a class="md-footer-social__link" href="https://twitter.com/datadoghq" rel="noopener" target="_blank" title="twitter.com"> <svg viewbox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg> </a> <a class="md-footer-social__link" href="https://www.instagram.com/datadoghq" rel="noopener" target="_blank" title="www.instagram.com"> <svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"></path></svg> </a> </div> </div> </div> </footer> </div> <script src="../../assets/javascripts/vendor.d710d30a.min.js"></script> <script src="../../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script> <script>
         app = initialize({
           base: "../..",
           features: ["tabs"],
